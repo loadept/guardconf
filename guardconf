@@ -2,6 +2,13 @@
 
 set -e 
 
+if [[ $EUID -ne 0 ]]; then
+    echo -e "\e[31mYou must run this script with sudo\e[0m"
+    exit 1
+fi
+
+USER_HOME=$(eval echo ~$SUDO_USER)
+
 # Verify if qrencode is installed
 if ! command -v qrencode &>/dev/null; then
     echo -e "\e[31mError: qrencode is not installed, please install qrencode\e[0m"
@@ -9,13 +16,13 @@ if ! command -v qrencode &>/dev/null; then
 fi
 
 # Verify that the user's wireguard configuration path exists
-BASE_CONF_PATH="$HOME/.config/wireguard"
+BASE_CONF_PATH="$USER_HOME/.config/wireguard"
 if [[ ! -d $BASE_CONF_PATH ]]; then
     echo -e "\e[31mError: The configuration directory does not exist in $BASE_CONF_PATH, make sure to create it\e[0m"
     exit 1
 fi
 
-ETC_CONF_PATH="$HOME/Documents/Wire/conf/wg0.conf" # change to "/etc/wireguard/wg0.conf"
+ETC_CONF_PATH="$USER_HOME/Documents/Wire/conf/wg0.conf" # change to "/etc/wireguard/wg0.conf"
 if [[ ! -f "$ETC_CONF_PATH" ]]; then
     echo -e "\e[31mError: The configuration file does not exist in $ETC_CONF_PATH\e[0m"
     exit 1
@@ -103,7 +110,7 @@ done
 
 # Add the new peer in /etc/wireguard/wg0.conf
 echo -e "\e[32mAdding the peer $PEER_NAME with IP $peer_address to the WireGuard configuration....\e[0m"
-sudo cat << EOF >> $ETC_CONF_PATH
+cat << EOF >> $ETC_CONF_PATH
 
 [Peer]
 PublicKey = $peer_public_key
