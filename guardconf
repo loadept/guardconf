@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+
+set -e 
+
+# Verify if qrencode is installed
+if ! command -v qrencode &>/dev/null; then
+    echo -e "\e[31mError: qrencode is not installed, please install qrencode\e[0m"
+    exit 1
+fi
+
+# Verify that the user's wireguard configuration path exists
+BASE_CONF_PATH="$HOME/.config/wireguard"
+if [[ ! -d $BASE_CONF_PATH ]]; then
+    echo -e "\e[31mError: The configuration directory does not exist in $BASE_CONF_PATH, make sure to create it\e[0m"
+    exit 1
+fi
+
+ETC_CONF_PATH="$HOME/Documents/Wire/conf/wg0.conf" # change to "/etc/wireguard/wg0.conf"
+if [[ ! -f "$ETC_CONF_PATH" ]]; then
+    echo -e "\e[31mError: The configuration file does not exist in $ETC_CONF_PATH\e[0m"
+    exit 1
+fi
+
+# Get parameters
+SERV_PUB_KEY=""
+PEER_NAME=""
+PUBLIC_IP=""
+
+usage() {
+    echo -e "\e[34mUsage\e[0m: \e[32m$0\e[0m \e[33m[-h help] [-k public-key] [-i ip-public] [-n name]\e[0m"
+    echo -e "  \e[36m-k\e[0m    Specify the file of public server key"
+    echo -e "  \e[36m-i\e[0m    Specify the public server IP"
+    echo -e "  \e[36m-n\e[0m    Specify the name of peer"
+    echo -e "  \e[36m-h\e[0m    Show options"
+    exit 1
+}
+
+while getopts ":k:i:n:h" opt; do
+    case $opt in
+        k)
+            SERV_PUB_KEY=$OPTARG
+            ;;
+        i)
+            PUBLIC_IP=$OPTARG
+            ;;
+        n)
+            PEER_NAME=$OPTARG
+            ;;
+        \?)
+            echo "Unknown flag -$OPTARG"
+            exit 1
+            ;;
+        :)
+            echo "Missing arguments for -$OPTARG flag"
+            exit 1
+            ;;
+        h)
+            usage
+            ;;
+    esac
+done
+
+# Verify flags
+if [[ -z "$SERV_PUB_KEY" ]]; then
+    usage
+fi
+
+if [[ -z "$PEER_NAME" ]]; then
+    usage
+fi
+
+if [[ -z "$PUBLIC_IP" ]]; then
+    usage
+fi
+
+if [[ ! -f "$SERV_PUB_KEY" ]]; then
+    echo -e "\e[31mError: The specified public key file does not exist: $SERV_PUB_KEY\e[0m"
+    exit 1
+fi
+
+# Peer variables
+peer_private_key=$(wg genkey)
+peer_public_key=$(echo $peer_private_key | wg pubkey)
+peer_address=""
+
+# Server variables
+serv_pub_key=$(< "$SERV_PUB_KEY")
+last_oct=$(awk -F '[ /= ]+' '/AllowedIPs/ {print $2}' "$ETC_CONF_PATH" | cut -d '.' -f4)
+last_oct_arr=($last_oct)
+serv_port=$(sed -n 's/ListenPort = //p' $ETC_CONF_PATH)
+
+# Extract last octet from existing IP's
+for i in {2..254}; do
+    if [[ " ${last_oct_arr[@]} " =~ " $i " ]]; then
+        continue
+    fi
+    peer_address="10.0.0.$i" 
+    break
+done
+
+# Disable wireguard 
+# sudo wg-quick down wg0
+
+# Add the new peer in /etc/wireguard/wg0.conf
+echo -e "\e[32mAdding the peer $PEER_NAME with IP $peer_address to the WireGuard configuration....\e[0m"
+sudo cat << EOF >> $ETC_CONF_PATH
+
+[Peer]
+PublicKey = $peer_public_key
+AllowedIPs = $peer_address/32
+EOF
+
+# Create a conf file for the new peer in ~/.wireguard/configs
+FILE_NAME="$PEER_NAME.conf"
+
+cat << EOF > $BASE_CONF_PATH/configs/$FILE_NAME
+[Interface]
+PrivateKey = $peer_private_key
+Address    = $peer_address/24
+  
+[Peer]
+PublicKey  = $serv_pub_key
+Endpoint   = $PUBLIC_IP:$serv_port
+AllowedIPs = 0.0.0.0/0, ::/0
+EOF
+
+# Generate qr
+qrencode -m 2 -t ANSIUTF8 < $BASE_CONF_PATH/configs/$FILE_NAME
+
+# Save keys en config path
+echo $peer_private_key > $BASE_CONF_PATH/keys/${PEER_NAME}.priv.key
+echo $peer_public_key > $BASE_CONF_PATH/keys/${PEER_NAME}.pub.key
+
+# Assign appropriate permissions
+chmod 400 "$BASE_CONF_PATH/keys/${PEER_NAME}.priv.key"
+chmod 400 "$BASE_CONF_PATH/keys/${PEER_NAME}.pub.key"
+
+# Enable wireguard
+# sudo wg-quick up wg0
