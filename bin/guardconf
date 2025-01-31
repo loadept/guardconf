@@ -22,7 +22,7 @@ if [[ ! -d $BASE_CONF_PATH ]]; then
     exit 1
 fi
 
-ETC_CONF_PATH="$USER_HOME/Documents/Wire/conf/wg0.conf" # change to "/etc/wireguard/wg0.conf"
+ETC_CONF_PATH="/etc/wireguard/wg0.conf"
 if [[ ! -f "$ETC_CONF_PATH" ]]; then
     echo -e "\e[31mError: The configuration file does not exist in $ETC_CONF_PATH\e[0m"
     exit 1
