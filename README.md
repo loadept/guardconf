@@ -1,6 +1,6 @@
 <div align="right">
   
-[![LANG](https://github.com/user-attachments/assets/a6722ae9-602a-4a2f-ab85-6f76d4ac0b51)](README.es.me)
+[![LANG](https://github.com/user-attachments/assets/a6722ae9-602a-4a2f-ab85-6f76d4ac0b51)](README.es.md)
 <div align="right">
 Switch Language
 </div>
