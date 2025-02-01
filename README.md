@@ -1,53 +1,113 @@
 # Guardconf
-This script allows you to configure and add
-new peers in the Wireguard configuration file,
-as well as generate public and private keys
-for these peers.
 
-# Instalation
-First download the file
+**Guardconf** is a script designed to simplify the configuration and management of WireGuard peers. It allows you to add new peers to your WireGuard configuration file and generate the necessary public and private keys for these peers.
 
-**curl**
+---
+
+## Installation
+
+Follow these steps to install and set up **Guardconf** on your system.
+
+### 1. Download the Script
+
+You can download the script using either `curl` or `wget`.
+
+#### Using `curl`:
 ```bash
-curl https://raw.githubusercontent.com/loadept/guardconf/refs/heads/master/bin/guardconf -o guardconf
-```
-**wget**
-``` bash
-wget https://raw.githubusercontent.com/loadept/guardconf/refs/heads/master/bin/guardconf
+curl -o guardconf https://raw.githubusercontent.com/loadept/guardconf/refs/heads/master/bin/guardconf
 ```
 
-Then we assign execution permissions
+#### Using `wget`:
 ```bash
-chmod 744 guardconf
+wget -O guardconf https://raw.githubusercontent.com/loadept/guardconf/refs/heads/master/bin/guardconf
 ```
 
-Now we are going to move the script to the **PATH**, so we can run it from anywhere.
-We can move this script to the **/usr/bin** directory, but for convenience we will
-use the **~/.local/bin** directory, so that we can have the script available only
-for our user.
+---
 
-We create the folder **~/.local/bin** if it does not exist.
+### 2. Assign Execution Permissions
+
+Make the script executable by running:
 ```bash
-mkdir ~/.local/bin
+chmod +x guardconf
 ```
 
-Now we move the file
+---
+
+### 3. Move the Script to Your PATH
+
+To run **Guardconf** from anywhere on your system, move it to a directory that is included in your `PATH`. For user-specific convenience, we recommend using `~/.local/bin`.
+
+#### Create the Directory (if it doesn't exist):
 ```bash
-mv ./guardconf ~/.local/bin
+mkdir -p ~/.local/bin
 ```
 
-With this it should be done, but first we must make sure that **~/.local/bin** is in the **PATH**.
+#### Move the Script:
+```bash
+mv ./guardconf ~/.local/bin/
+```
+
+---
+
+### 4. Ensure `~/.local/bin` is in Your PATH
+
+Check if `~/.local/bin` is already in your `PATH`:
 ```bash
 echo $PATH
 ```
-If we go something like `:/home/user/.local/bin` it means that it is available in the **PATH**.
 
-If it is not available we will export it by adding this line in `.bashrc`, `.bash_profile` or `.profile`.
+If you see something like `:/home/your-username/.local/bin`, it means the directory is already included.
+
+#### If Not, Add It to Your PATH:
+
+Add the following line to your shell configuration file (e.g., `.bashrc`, `.bash_profile`, or `.profile`):
 ```bash
 export PATH=$PATH:$HOME/.local/bin
 ```
 
-With this we should have our script available. To confirm type:
+Then, reload your shell configuration:
+```bash
+source ~/.bashrc  # or source ~/.bash_profile, depending on your setup
+```
+
+---
+
+### 5. Verify Installation
+
+To confirm that **Guardconf** is installed correctly, run:
+```bash
+guardconf
+```
+
+If the script runs without errors, the installation is successful.
+
+---
+
+## Usage
+
+Once installed, you can use **Guardconf** to manage your WireGuard configuration. For example, to add a new peer, run:
 ```bash
 sudo guardconf
 ```
+
+Follow the on-screen prompts to configure your WireGuard peers.
+
+---
+
+## Notes
+
+- Ensure you have `sudo` privileges to modify WireGuard configuration files.
+- The script is designed to be user-friendly and requires minimal manual intervention.
+
+---
+
+## Troubleshooting
+
+- **Script Not Found**: If the `guardconf` command is not recognized, ensure `~/.local/bin` is in your `PATH` and the script is executable.
+- **Permission Denied**: If you encounter permission issues, try running the script with `sudo`.
+
+---
+
+## Contributing
+
+If you'd like to contribute to **Guardconf**, feel free to submit issues or pull requests on the [GitHub repository](https://github.com/loadept/guardconf).
