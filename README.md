@@ -1,3 +1,11 @@
+<div align="right">
+  
+[![LANG](https://github.com/user-attachments/assets/a6722ae9-602a-4a2f-ab85-6f76d4ac0b51)](README.es.me)
+<div align="right">
+Switch Language
+</div>
+</div>
+
 # Guardconf
 
 **Guardconf** is a script designed to simplify the configuration and management of WireGuard peers. It allows you to add new peers to your WireGuard configuration file and generate the necessary public and private keys for these peers.
